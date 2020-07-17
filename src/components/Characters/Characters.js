@@ -1,20 +1,24 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import { useDispatch, useSelector } from 'react-redux';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import InputBase from '@material-ui/core/InputBase';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
+import _ from 'lodash';
 import Character from '../Character/Character';
 import { getCharacters } from '../../actions';
 import useStyles from './CharactersStyle';
 
 const initialState = {
+  ascending: true,
   name: '',
   species: {
     value: '',
@@ -39,20 +43,24 @@ const reducer = (state = {}, action) => {
   switch (action.type) {
     case 'inputChange':
       return { ...state, name: action.value };
-    case 'genderRadioChange':
+    case 'genderDropChange':
       return {
         ...state,
         gender: { ...state.gender, value: action.value },
       };
-    case 'speciesRadioChange':
+    case 'speciesDropChange':
       return {
         ...state,
         species: { ...state.species, value: action.value },
       };
+    case 'changeSort':
+      return { ...state, ascending: action.value };
     default:
       return state;
   }
 };
+// Debounce method
+const sendQuery = (obj, dispatch) => dispatch(getCharacters(obj));
 
 const Characters = (props) => {
   const [currState, dispatchLocalState] = useReducer(
@@ -63,29 +71,30 @@ const Characters = (props) => {
   const { classes } = props;
 
   const dispatch = useDispatch();
+  const delayedQuery = useRef(
+    _.debounce((obj) => sendQuery(obj, dispatch), 500),
+  ).current;
+
   const onInputChange = (value) => {
+    const obj = {
+      gender: currState.gender.value,
+      species: currState.species.value,
+      name: value,
+    };
     dispatchLocalState({ type: 'inputChange', value });
-  };
-  const onSearch = () => {
-    dispatch(
-      getCharacters({
-        name: currState.name,
-        gender: currState.gender.value,
-        species: currState.species.value,
-      }),
-    );
+    delayedQuery(obj);
   };
 
-  const handleRadioChange = (value, type) => {
+  const handleDropChange = (value, type) => {
     const { name } = currState;
     let gender = currState.gender.value;
     let species = currState.species.value;
 
     if (type === 'gender') {
-      dispatchLocalState({ type: 'genderRadioChange', value });
+      dispatchLocalState({ type: 'genderDropChange', value });
       gender = value;
     } else {
-      dispatchLocalState({ type: 'speciesRadioChange', value });
+      dispatchLocalState({ type: 'speciesDropChange', value });
       species = value;
     }
     dispatch(
@@ -97,9 +106,16 @@ const Characters = (props) => {
     );
   };
 
+  const handleChangeSort = () => {
+    dispatchLocalState({
+      type: 'changeSort',
+      value: !currState.ascending,
+    });
+  };
+
   const clearAll = () => {
-    dispatchLocalState({ type: 'genderRadioChange', value: '' });
-    dispatchLocalState({ type: 'speciesRadioChange', value: '' });
+    dispatchLocalState({ type: 'genderDropChange', value: '' });
+    dispatchLocalState({ type: 'speciesDropChange', value: '' });
     dispatchLocalState({ type: 'inputChange', value: '' });
     dispatch(
       getCharacters({
@@ -127,7 +143,7 @@ const Characters = (props) => {
               onChange={(e) => onInputChange(e.target.value)}
               value={currState.name}
             />
-            <IconButton onClick={onSearch} aria-label="search">
+            <IconButton aria-label="search">
               <SearchIcon />
             </IconButton>
           </div>
@@ -142,7 +158,7 @@ const Characters = (props) => {
               id="demo-simple-select"
               value={currState.gender.value}
               onChange={(e) =>
-                handleRadioChange(e.target.value, 'gender', currState)
+                handleDropChange(e.target.value, 'gender', currState)
               }
             >
               {currState.gender.allGenders.map((genderVal) => (
@@ -163,11 +179,7 @@ const Characters = (props) => {
               id="demo-simple-select"
               value={currState.species.value}
               onChange={(e) =>
-                handleRadioChange(
-                  e.target.value,
-                  'species',
-                  currState,
-                )
+                handleDropChange(e.target.value, 'species', currState)
               }
             >
               {currState.species.allSpecies.map((speciesVal) => (
@@ -186,14 +198,41 @@ const Characters = (props) => {
             Clear All
           </button>
         </div>
+        <FormControl
+          component="fieldset"
+          className={classes.dropDown}
+        >
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={currState.ascending}
+                  onChange={handleChangeSort}
+                  name="sort"
+                />
+              }
+              label={currState.ascending ? 'Ascending' : 'Descending'}
+            />
+          </FormGroup>
+        </FormControl>
       </Grid>
       <Grid container item className={classes.charactersWrapper}>
         {characters &&
-          characters.map((item) => (
-            <Grid item xs={6} sm={3} className={classes.spacing}>
-              <Character item={item} />
-            </Grid>
-          ))}
+          characters
+            .sort((a, b) => {
+              return currState.ascending ? a.id - b.id : b.id - a.id;
+            })
+            .map((item) => (
+              <Grid
+                item
+                xs={6}
+                sm={3}
+                className={classes.spacing}
+                key={item.id}
+              >
+                <Character item={item} />
+              </Grid>
+            ))}
       </Grid>
     </div>
   );
