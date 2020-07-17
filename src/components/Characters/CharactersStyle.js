@@ -2,7 +2,7 @@ const useStyles = {
   filterWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: '120px',
+    margin: '30px 0',
   },
 
   searchFilterWrapper: {
@@ -10,6 +10,7 @@ const useStyles = {
     border: '1px solid rgba(0,0,0,0.5)',
     paddingLeft: '20px',
     borderRadius: '25px',
+    margin: '20px 0',
   },
   dropDown: {
     width: '100px',

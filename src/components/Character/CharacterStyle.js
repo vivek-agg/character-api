@@ -37,8 +37,14 @@ const useStyles = {
       borderBottom: 'none',
     },
   },
+  leftDetails: {
+    marginRight: '40px',
+  },
   rightDetails: {
     color: '#ff9800',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 };
 

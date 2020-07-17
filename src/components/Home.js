@@ -5,7 +5,7 @@ const useStyles = makeStyles({
   homeContainer: {
     height: 'calc(100vh - 83px)',
     background:
-      'url(/rick-and-morty-app/static/media/rickandmorty2.825488f7.png) no-repeat',
+      'url(https://thehumanist.com/wp-content/uploads/2015/09/rickmorty.jpg) no-repeat',
     backgroundSize: 'cover',
     backgroundPosition: '50%',
   },

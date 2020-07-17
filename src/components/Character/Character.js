@@ -48,11 +48,11 @@ const Character = (props) => {
           <div className={classes.rightDetails}>{gender}</div>
         </div>
         <div className={classes.details}>
-          <div>ORIGIN</div>
+          <div className={classes.leftDetails}>ORIGIN</div>
           <div className={classes.rightDetails}>{origin.name}</div>
         </div>
         <div className={classes.details}>
-          <div>LAST LOCATION</div>
+          <div className={classes.leftDetails}>LAST LOCATION</div>
           <div className={classes.rightDetails}>{location.name}</div>
         </div>
       </div>
