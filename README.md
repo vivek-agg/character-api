@@ -1,4 +1,4 @@
-# character-api
+# Rick and Morty App
 
 Deployed on Netlify: https://apprickandmorty.netlify.app/
 
